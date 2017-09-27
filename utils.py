@@ -61,7 +61,7 @@ def clean_data(df):
 
     # THERE ARE SOME MISSING VALUES ON THE AGE COLUMNS, LETS GET RID OF THEM
     df["Age"].replace(0, np.NaN, inplace = True)
-    df["Age"].fillna(df["Age"].mean(), inplace = True)
+    df["Age"].fillna(round(df["Age"].mean()), inplace = True)
 
     # ADDING A NEW COLUMN CALLED DELAY, THIS IS THE DELAY BETWEEN ACCIDENT AND CLAIM
     diff = df["DateClaimed"].copy() - df["Date"].copy()
@@ -92,7 +92,7 @@ def plot_variable_percentage(data, togroupby, style='-', kind='line', xlims = No
     sns.despine()
     plt.show()
 
-def plot_variable_percentage_datetime(data, togroupby, datetime_attr, style='-', kind='line', xlims = None):
+def plot_variable_percentage_datetime(data, togroupby, datetime_attr, style='-', kind='line'):
     """
     Receives two dataframes and a togroupby list of variables to groupby
     """
@@ -104,7 +104,6 @@ def plot_variable_percentage_datetime(data, togroupby, datetime_attr, style='-',
 
     to_plot = (frauds/non_frauds * 100)
     to_plot.plot(kind = kind, style = style)
-    if xlims != None:
-        plt.xlim(xlims)
+
     sns.despine()
     plt.show()

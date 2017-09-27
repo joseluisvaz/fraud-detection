@@ -17,34 +17,48 @@ data = pd.read_csv('claims.csv')
 data = utils.clean_data(data)
 
 data.dtypes
-utils.plot_variable_percentage(data, "Delay", kind = 'bar', style = 'o', xlims = (0,100))
 
-########### DATA PREPARATION AND CLEANING#####################
-data = utils.transform_the_date(data)
-data = data.dropna()
-
-data["date"] = data.apply(utils.convert_to_date, axis = 1)
-data["dateClaimed"] = data.apply(utils.convert_to_date_claim, axis = 1)
-data["date"] = pd.to_datetime(data["date"], errors = "coerce")
-data["dateClaimed"] = pd.to_datetime(data["dateClaimed"], errors = "coerce")
-
-# THERE ARE SOME MISSING VALUES ON THE AGE COLUMNS, LETS GET RID OF THEM
-data["Age"].replace(0, np.NaN, inplace = True)
-data["Age"].fillna(data["Age"].mean(), inplace = True)
-
-# ADDING A NEW COLUMN CALLED DELAY, THIS IS THE DELAY BETWEEN ACCIDENT AND CLAIM
-data["delay"] = ((data["dateClaimed"] - data["date"]) / np.timedelta64(1, 'D')).astype(int)
-
-# THE DATA WAS FILLED MANUALLY, THEREFORE SOME ASSUMPTIONS WERE MADE FOR CLEANING
-# IT, SUCH AS MODIFYING THE NEGATIVE VALUES FOUND IN THE DELAY COLUMNS
-data.loc[(data["delay"] < 0) & (data["delay"] > -20), "delay"] *= -1
-data.loc[data["delay"] < -300, "delay"] += 360
-# DROPPING ALL OTHER NEGATIVE VALUES
-data = data[data["delay"] >= 0]
-
-## Percentage of fraudulent claims
-#data[data["FraudFound_P"] == 1].shape[0]
-#data[data["FraudFound_P"] == 0].shape[0]
+data[data["AddressChange_Claim"] == "under 6 months"].shape[0]
+utils.plot_variable_percentage(data, "BasePolicy", kind = "bar")
 
 
-utils.plot_variable_percentage(data, "delay", style = 'o', xlims = (0,100))
+Month                            int64
+WeekOfMonth                      int64
+DayOfWeek                        int64
+Make                            object
+AccidentArea                    object
+DayOfWeekClaimed               float64
+MonthClaimed                   float64
+WeekOfMonthClaimed               int64
+Sex                             object
+MaritalStatus                   object
+Age                            float64
+Fault                           object
+PolicyType                      object
+VehicleCategory                 object
+VehiclePrice                    object
+FraudFound_P                     int64
+PolicyNumber                     int64
+RepNumber                        int64
+Deductible                       int64
+DriverRating                     int64
+Days_Policy_Accident            object
+Days_Policy_Claim               object
+PastNumberOfClaims              object
+AgeOfVehicle                    object
+AgeOfPolicyHolder               object
+PoliceReportFiled               object
+WitnessPresent                  object
+AgentType                       object
+NumberOfSuppliments             object
+AddressChange_Claim             object
+NumberOfCars                    object
+Year                             int64
+BasePolicy                      object
+Date                    datetime64[ns]
+DateClaimed             datetime64[ns]
+Delay                            int64
+dtype: object
+
+
+utils.plot_variable_percentage_datetime(data, "DateClaimed", 'year', kind = 'bar', style = 'o')
