@@ -76,17 +76,26 @@ def clean_data(df):
     df = df[df["Delay"] >= 0]
     return df
 
-def plot_variable_percentage(data, togroupby, style='-', kind='line', xlims = None):
+def fraud_percentage(df, togroupby):
+    """
+    Receives a dataframe and a paremeter and creates the percentage of fraudulent claims
+    present in this variable
+    """
+    series = df.groupby([df.FraudFound_P, getattr(df, togroupby)]).count()
+    frauds = series.PolicyNumber[1]
+    non_frauds = series.PolicyNumber[0]
+
+    percentage = frauds/non_frauds * 100
+
+    return percentage
+
+def plot_percent(df, togroupby, style='-', kind='line', xlims = None):
     """
     Receives two dataframes and a togroupby list of variables to groupby
     """
-    to_group = data.groupby([data.FraudFound_P, data[togroupby]]).count()
+    percentage = fraud_percent(data, togroupby)
+    percentage.plot(kind = kind, style = style)
 
-    frauds = to_group.PolicyNumber[1]
-    non_frauds = to_group.PolicyNumber[0]
-
-    to_plot = (frauds/non_frauds * 100)
-    to_plot.plot(kind = kind, style = style)
     if xlims != None:
         plt.xlim(xlims)
     sns.despine()
