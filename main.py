@@ -6,6 +6,8 @@ import datetime as dt
 import seaborn as sns
 import calendar
 
+pd.set_option('chained_assignment',None)
+
 cd ~/crabi/fraud-detection
 import utils
 sns.set_style("white")
@@ -13,6 +15,9 @@ sns.set_style("white")
 
 data = pd.read_csv('claims.csv')
 data = utils.clean_data(data)
+
+data.dtypes
+utils.plot_variable_percentage(data, "Delay", kind = 'bar', style = 'o', xlims = (0,100))
 
 ########### DATA PREPARATION AND CLEANING#####################
 data = utils.transform_the_date(data)

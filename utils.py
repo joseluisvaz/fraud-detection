@@ -4,6 +4,7 @@ import pandas as pd
 import calendar
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 
 months_dic = { "Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "Jun": 5, "Jul": 6, "Aug": 7,
             "Sep": 8, "Oct": 9, "Nov": 10, "Dec": 11 }
@@ -46,35 +47,63 @@ def clean_data(df):
     df = transform_the_date(df)
     df = df.dropna()
 
-    df["date"] = df.apply(convert_to_date, axis = 1)
-    df["dateClaimed"] = df.apply(convert_to_date_claim, axis = 1)
-    df["date"] = pd.to_datetime(df["date"], errors = "coerce")
-    df["dateClaimed"] = pd.to_datetime(df["dateClaimed"], errors = "coerce")
+    # CREATING PD.SERIES WITH DATE
+    date = df.apply(convert_to_date, axis = 1)
+    dateClaimed = df.apply(convert_to_date_claim, axis = 1)
+
+    # CHANGING TYPE TO DATETIME
+    date = pd.to_datetime(date, errors = "coerce")
+    dateClaimed = pd.to_datetime(dateClaimed, errors = "coerce")
+
+    # ASSIGNING TO DATAFRAME
+    df.loc[:, "Date"] = date
+    df.loc[:, "DateClaimed"] = dateClaimed
 
     # THERE ARE SOME MISSING VALUES ON THE AGE COLUMNS, LETS GET RID OF THEM
     df["Age"].replace(0, np.NaN, inplace = True)
     df["Age"].fillna(df["Age"].mean(), inplace = True)
 
     # ADDING A NEW COLUMN CALLED DELAY, THIS IS THE DELAY BETWEEN ACCIDENT AND CLAIM
-    df["delay"] = ((df["dateClaimed"] - df["date"]) / np.timedelta64(1, 'D')).astype(int)
+    diff = df["DateClaimed"].copy() - df["Date"].copy()
+    delay = diff/np.timedelta64(1, 'D')
+    df["Delay"] = delay.astype(int)
 
     # THE DATA WAS FILLED MANUALLY, THEREFORE SOME ASSUMPTIONS WERE MADE FOR CLEANING
     # IT, SUCH AS MODIFYING THE NEGATIVE VALUES FOUND IN THE DELAY COLUMNS
-    df.loc[(df["delay"] < 0) & (df["delay"] > -20), "delay"] *= -1
-    df.loc[df["delay"] < -300, "delay"] += 360
+    df.loc[(df["Delay"] < 0) & (df["Delay"] > -20), "Delay"] *= -1
+    df.loc[df["Delay"] < -300, "Delay"] += 360
     # DROPPING ALL OTHER NEGATIVE VALUES
-    df = df[df["delay"] >= 0]
+    df = df[df["Delay"] >= 0]
     return df
 
-def plot_variable_percentage(data, togroupby, style='line', xlims = None):
+def plot_variable_percentage(data, togroupby, style='-', kind='line', xlims = None):
     """
     Receives two dataframes and a togroupby list of variables to groupby
     """
     to_group = data.groupby([data.FraudFound_P, data[togroupby]]).count()
+
     frauds = to_group.PolicyNumber[1]
     non_frauds = to_group.PolicyNumber[0]
+
     to_plot = (frauds/non_frauds * 100)
-    to_plot.plot(style = 'o')
+    to_plot.plot(kind = kind, style = style)
+    if xlims != None:
+        plt.xlim(xlims)
+    sns.despine()
+    plt.show()
+
+def plot_variable_percentage_datetime(data, togroupby, datetime_attr, style='-', kind='line', xlims = None):
+    """
+    Receives two dataframes and a togroupby list of variables to groupby
+    """
+
+    to_group = data.groupby([data.FraudFound_P, getattr(data[togroupby].dt, datetime_attr)]).count()
+
+    frauds = to_group.PolicyNumber[1]
+    non_frauds = to_group.PolicyNumber[0]
+
+    to_plot = (frauds/non_frauds * 100)
+    to_plot.plot(kind = kind, style = style)
     if xlims != None:
         plt.xlim(xlims)
     sns.despine()
