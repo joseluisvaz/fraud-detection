@@ -21,43 +21,23 @@ data["dateClaimed"] = data.apply(utils.convert_to_date_claim, axis = 1)
 data["date"] = pd.to_datetime(data["date"], errors = "coerce")
 data["dateClaimed"] = pd.to_datetime(data["dateClaimed"], errors = "coerce")
 
-# Cleaning 0 values in Age column
-# Missing Values = 319
-data[data["Age"] == 0].count()[0]
-# Changing Missing Values to Nan
+# THERE ARE SOME MISSING VALUES ON THE AGE COLUMNS, LETS GET RID OF THEM
 data["Age"].replace(0, np.NaN, inplace = True)
 data["Age"].fillna(data["Age"].mean(), inplace = True)
 
-delay = ((data["dateClaimed"] - data["date"]) / np.timedelta64(1, 'D')).astype(int)
-data["delay"] = delay
+# ADDING A NEW COLUMN CALLED DELAY, THIS IS THE DELAY BETWEEN ACCIDENT AND CLAIM
+data["delay"] = ((data["dateClaimed"] - data["date"]) / np.timedelta64(1, 'D')).astype(int)
 
-condition = data["FraudFound_P"] == 1
-a = np.where(condition, 'Fraud', "Not Fraud")
-count = data.groupby(a)["FraudFound_P"].count()
+# THE DATA WAS FILLED MANUALLY, THEREFORE SOME ASSUMPTIONS WERE MADE FOR CLEANING
+# IT, SUCH AS MODIFYING THE NEGATIVE VALUES FOUND IN THE DELAY COLUMNS
+data.loc[(data["delay"] < 0) & (data["delay"] > -20), "delay"] *= -1
+data.loc[data["delay"] < -300, "delay"] += 360
+# DROPPING ALL OTHER NEGATIVE VALUES
+data = data[data["delay"] >= 0]
 
-frauds = data[data["FraudFound_P"] == 1]
-not_frauds = data[data["FraudFound_P"] == 0]
-
-print("Number of Frauds: " +  str(count["Fraud"]))
-print("Number of Frauds: " +  str(count["Not Fraud"]))
-print("Percentage: " +  str(count["Fraud"]/count["Not Fraud"]*100))
-
-def plot_variable_percentage(data, fraud_data, not_fraud_data, togroupby, style='line'):
-    """
-    Receives two dataframes and a togroupby list of variables to groupby
-    """
-    fraud_count = data.groupby([fraud_data[togroupby]])["PolicyNumber"].count()
-    not_frauds_count = data.groupby([not_fraud_data[togroupby]])["PolicyNumber"].count()
-    to_plot = (fraud_count/not_frauds_count).fillna(0).plot(kind=style)
-    sns.despine()
-    plt.show()
-
-plot_variable_percentage(data, frauds, not_frauds, "VehicleCategory", style = 'bar')
+## Percentage of fraudulent claims
+#data[data["FraudFound_P"] == 1].shape[0]
+#data[data["FraudFound_P"] == 0].shape[0]
 
 
-
-A = data.groupby([frauds["Age"]])["PolicyNumber"].count()
-B = data.groupby([not_frauds["Age"]])["PolicyNumber"].count()
-(A/B*100).fillna(0).plot()
-sns.despine()
-plt.show()
+utils.plot_variable_percentage(data, "delay", style = 'o', xlims = (0,100))
