@@ -82,10 +82,7 @@ def fraud_percentage(df, togroupby):
     Receives a dataframe and a paremeter and creates the percentage of fraudulent claims
     present in this variable
     """
-    series = df.groupby([df.FraudFound_P, op.attrgetter(togroupby)(df)]).count()
-    frauds = series.PolicyNumber[1]
-    non_frauds = series.PolicyNumber[0]
-
-    percentage = frauds/non_frauds * 100
+    counted = df.groupby([df.FraudFound_P, op.attrgetter(togroupby)(df)]).size()
+    counted = counted / counted.groupby(level=0).sum() * 100
 
     return percentage
