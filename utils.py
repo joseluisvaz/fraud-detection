@@ -42,6 +42,30 @@ def transform_the_date(df):
     df = convert_to_categorical(df)
     return df
 
+def clean_data(df):
+    df = transform_the_date(df)
+    df = df.dropna()
+
+    df["date"] = df.apply(convert_to_date, axis = 1)
+    df["dateClaimed"] = df.apply(converdf_date_claim, axis = 1)
+    df["date"] = pd.to_datetime(df["date"], errors = "coerce")
+    df["dateClaimed"] = pd.to_datetime(df["dateClaimed"], errors = "coerce")
+
+    # THERE ARE SOME MISSING VALUES ON THE AGE COLUMNS, LETS GET RID OF THEM
+    df["Age"].replace(0, np.NaN, inplace = True)
+    df["Age"].fillna(df["Age"].mean(), inplace = True)
+
+    # ADDING A NEW COLUMN CALLED DELAY, THIS IS THE DELAY BETWEEN ACCIDENT AND CLAIM
+    df["delay"] = ((df["dateClaimed"] - df["date"]) / np.timedelta64(1, 'D')).astype(int)
+
+    # THE DATA WAS FILLED MANUALLY, THEREFORE SOME ASSUMPTIONS WERE MADE FOR CLEANING
+    # IT, SUCH AS MODIFYING THE NEGATIVE VALUES FOUND IN THE DELAY COLUMNS
+    df.loc[(df["delay"] < 0) & (df["delay"] > -20), "delay"] *= -1
+    df.loc[df["delay"] < -300, "delay"] += 360
+    # DROPPING ALL OTHER NEGATIVE VALUES
+    df = df[df["delay"] >= 0]
+    return df
+
 def plot_variable_percentage(data, togroupby, style='line', xlims = None):
     """
     Receives two dataframes and a togroupby list of variables to groupby

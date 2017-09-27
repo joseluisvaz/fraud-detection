@@ -6,6 +6,7 @@ import datetime as dt
 import seaborn as sns
 import calendar
 
+cd ~/crabi/fraud-detection
 import utils
 sns.set_style("white")
 
