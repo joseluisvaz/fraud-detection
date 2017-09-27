@@ -5,6 +5,7 @@ import calendar
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+import operator as op
 
 months_dic = { "Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "Jun": 5, "Jul": 6, "Aug": 7,
             "Sep": 8, "Oct": 9, "Nov": 10, "Dec": 11 }
@@ -81,38 +82,10 @@ def fraud_percentage(df, togroupby):
     Receives a dataframe and a paremeter and creates the percentage of fraudulent claims
     present in this variable
     """
-    series = df.groupby([df.FraudFound_P, getattr(df, togroupby)]).count()
+    series = df.groupby([df.FraudFound_P, op.attrgetter(togroupby)(df)]).count()
     frauds = series.PolicyNumber[1]
     non_frauds = series.PolicyNumber[0]
 
     percentage = frauds/non_frauds * 100
 
     return percentage
-
-def plot_percent(df, togroupby, style='-', kind='line', xlims = None):
-    """
-    Receives two dataframes and a togroupby list of variables to groupby
-    """
-    percentage = fraud_percent(data, togroupby)
-    percentage.plot(kind = kind, style = style)
-
-    if xlims != None:
-        plt.xlim(xlims)
-    sns.despine()
-    plt.show()
-
-def plot_variable_percentage_datetime(data, togroupby, datetime_attr, style='-', kind='line'):
-    """
-    Receives two dataframes and a togroupby list of variables to groupby
-    """
-
-    to_group = data.groupby([data.FraudFound_P, getattr(data[togroupby].dt, datetime_attr)]).count()
-
-    frauds = to_group.PolicyNumber[1]
-    non_frauds = to_group.PolicyNumber[0]
-
-    to_plot = (frauds/non_frauds * 100)
-    to_plot.plot(kind = kind, style = style)
-
-    sns.despine()
-    plt.show()

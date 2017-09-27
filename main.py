@@ -16,7 +16,10 @@ sns.set_style("white")
 data = pd.read_csv('claims.csv')
 data = utils.clean_data(data)
 
-data[data["AddressChange_Claim"] == "4 to 8 years"].shape[0]
-utils.plot_variable_percentage(data, "AgeOfVehicle", kind = "bar")
+utils.fraud_percentage(data, "Delay").plot(style = 'o');
+plt.xlim(0,100)
+sns.despine()
+plt.show()
 
-utils.plot_variable_percentage_datetime(data, "DateClaimed", 'year', kind = 'bar', style = 'o')
+
+data[data["AddressChange_Claim"] == "4 to 8 years"].shape[0]
