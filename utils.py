@@ -47,7 +47,7 @@ def clean_data(df):
     df = df.dropna()
 
     df["date"] = df.apply(convert_to_date, axis = 1)
-    df["dateClaimed"] = df.apply(converdf_date_claim, axis = 1)
+    df["dateClaimed"] = df.apply(convert_to_date_claim, axis = 1)
     df["date"] = pd.to_datetime(df["date"], errors = "coerce")
     df["dateClaimed"] = pd.to_datetime(df["dateClaimed"], errors = "coerce")
 

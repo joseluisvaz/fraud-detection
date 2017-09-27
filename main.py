@@ -12,6 +12,7 @@ sns.set_style("white")
 
 
 data = pd.read_csv('claims.csv')
+data = utils.clean_data(data)
 
 ########### DATA PREPARATION AND CLEANING#####################
 data = utils.transform_the_date(data)
