@@ -83,6 +83,6 @@ def fraud_percentage(df, togroupby):
     present in this variable
     """
     counted = df.groupby([df.FraudFound_P, op.attrgetter(togroupby)(df)]).size()
-    counted = counted / counted.groupby(level=0).sum() * 100
+    percentage = (counted / counted.groupby(level=1).sum()) * 100
 
-    return percentage
+    return percentage[1]
